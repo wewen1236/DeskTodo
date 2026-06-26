@@ -1,6 +1,6 @@
 {
   "name": "desktodo",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A Windows 11 native-style desktop todo application",
   "main": "./out/main/index.js",
   "author": "DeskTodo",

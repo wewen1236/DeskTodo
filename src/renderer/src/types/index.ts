@@ -11,6 +11,10 @@ export interface Todo {
   order: number
   createdAt: string
   deletedAt: string | null
+  isPeriodic: boolean
+  periodStart: string | null
+  periodEnd: string | null
+  completedDates: string[]
 }
 
 export interface Reminder {

@@ -4,6 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DeskTodo</title>
+    <script>
+      // Immediately apply dark theme before any CSS or body parsing to avoid white flash
+      (function() {
+        var isDark = /theme=dark/.test(window.location.search)
+        window.__INITIAL_THEME__ = isDark ? 'dark' : 'light'
+        var root = document.documentElement
+        if (isDark) {
+          root.classList.add('dark')
+          root.style.backgroundColor = '#202020'
+        } else {
+          root.style.backgroundColor = '#f3f3f3'
+        }
+      })()
+    </script>
   </head>
   <body class="overflow-hidden">
     <div id="root"></div>

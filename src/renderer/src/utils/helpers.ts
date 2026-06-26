@@ -1,5 +1,48 @@
 import { Todo } from '@/types'
 
+export interface DateStats {
+  total: number
+  completed: number
+}
+
+export function getDateStats(todos: Todo[], dateStr: string): DateStats {
+  let total = 0
+  let completed = 0
+  for (const t of todos) {
+    if (t.deletedAt) continue
+    const matches =
+      (t.dueDate && t.dueDate.slice(0, 10) === dateStr) ||
+      (t.isPeriodic && t.periodStart && t.periodEnd && dateStr >= t.periodStart && dateStr <= t.periodEnd)
+    if (!matches) continue
+    total++
+    if (t.isPeriodic && t.completedDates.includes(dateStr)) {
+      completed++
+    } else if (!t.isPeriodic && t.completed) {
+      completed++
+    }
+  }
+  return { total, completed }
+}
+
+export function getTodayStr(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+export function isDateInPeriod(dateStr: string, start: string, end: string): boolean {
+  return dateStr >= start && dateStr <= end
+}
+
+export function isTodoCompletedToday(todo: Todo): boolean {
+  if (todo.isPeriodic && todo.periodStart && todo.periodEnd) {
+    const today = getTodayStr()
+    if (isDateInPeriod(today, todo.periodStart, todo.periodEnd)) {
+      return todo.completedDates.includes(today)
+    }
+  }
+  return todo.completed
+}
+
 export function exportToJSON(todos: Todo[]): string {
   return JSON.stringify(todos, null, 2)
 }

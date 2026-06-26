@@ -3,6 +3,7 @@ import { useTodoStore } from '@/store/todoStore'
 import { useListStore } from '@/store/listStore'
 import { Todo } from '@/types'
 import { TodoItem } from './TodoItem'
+import { isTodoCompletedToday } from '@/utils/helpers'
 import {
   DndContext,
   closestCenter,
@@ -20,7 +21,7 @@ import {
 
 interface TodoListProps {
   todos: Todo[]
-  onToggleComplete: (id: string) => void
+  onToggleComplete: (id: string, date?: string) => void
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
   onAdd: () => void
@@ -44,8 +45,8 @@ export function TodoList({ todos, onToggleComplete, onEdit, onDelete, onAdd }: T
     }
   }
 
-  const completedTodos = filteredTodos.filter((t) => t.completed)
-  const activeTodos = filteredTodos.filter((t) => !t.completed)
+  const completedTodos = filteredTodos.filter((t) => isTodoCompletedToday(t))
+  const activeTodos = filteredTodos.filter((t) => !isTodoCompletedToday(t))
 
   return (
     <div className="h-full flex flex-col overflow-hidden">

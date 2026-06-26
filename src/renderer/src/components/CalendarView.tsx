@@ -15,12 +15,14 @@ import {
 } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { Todo } from '@/types'
+import { getDateStats } from '@/utils/helpers'
+import { ProgressRing } from './ProgressRing'
 
 interface CalendarViewProps {
   todos: Todo[]
-  selectedDate: string | null
-  onSelectDate: (date: string | null) => void
-  onToggleComplete: (id: string) => void
+  selectedDate: string
+  onSelectDate: (date: string) => void
+  onToggleComplete: (id: string, date?: string) => void
 }
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
@@ -35,13 +37,23 @@ export function CalendarView({ todos, selectedDate, onSelectDate, onToggleComple
   }, [currentMonth])
 
   const getTodosForDate = (date: Date) => {
-    return todos.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), date))
+    const dateStr = format(date, 'yyyy-MM-dd')
+    return todos.filter((t) => {
+      if (t.dueDate && isSameDay(new Date(t.dueDate), date)) return true
+      if (t.isPeriodic && t.periodStart && t.periodEnd &&
+          dateStr >= t.periodStart && dateStr <= t.periodEnd) return true
+      return false
+    })
   }
 
-  const selectedDateObj = selectedDate ? new Date(selectedDate) : null
-  const selectedDateTodos = selectedDateObj
-    ? todos.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), selectedDateObj))
-    : []
+  const selectedDateObj = new Date(selectedDate)
+  const selectedDateStr = format(selectedDateObj, 'yyyy-MM-dd')
+  const selectedDateTodos = todos.filter((t) => {
+    if (t.dueDate && isSameDay(new Date(t.dueDate), selectedDateObj)) return true
+    if (t.isPeriodic && t.periodStart && t.periodEnd &&
+        selectedDateStr >= t.periodStart && selectedDateStr <= t.periodEnd) return true
+    return false
+  })
 
   return (
     <div className="h-full flex flex-col overflow-hidden animate-fade-in">
@@ -74,8 +86,10 @@ export function CalendarView({ todos, selectedDate, onSelectDate, onToggleComple
           {days.map((day) => {
             const dayTodos = getTodosForDate(day)
             const isCurrentMonth = isSameMonth(day, currentMonth)
-            const isSelected = selectedDateObj ? isSameDay(day, selectedDateObj) : false
+            const isSelected = isSameDay(day, selectedDateObj)
             const isTodayDate = isToday(day)
+
+            const dayStats = getDateStats(todos, format(day, 'yyyy-MM-dd'))
 
             return (
               <button
@@ -84,16 +98,14 @@ export function CalendarView({ todos, selectedDate, onSelectDate, onToggleComple
                   !isCurrentMonth ? 'other-month' : ''
                 }`}
                 onClick={() => {
-                  if (isSelected) {
-                    onSelectDate(null)
-                  } else {
-                    onSelectDate(day.toISOString())
-                  }
+                  onSelectDate(format(day, 'yyyy-MM-dd'))
                 }}
               >
                 <span>{format(day, 'd')}</span>
-                {dayTodos.length > 0 && (
-                  <span className="calendar-dot" />
+                {dayStats.total > 0 ? (
+                  <ProgressRing total={dayStats.total} completed={dayStats.completed} size={18} strokeWidth={2} />
+                ) : (
+                  <span className="w-[18px]" />
                 )}
               </button>
             )
@@ -102,15 +114,11 @@ export function CalendarView({ todos, selectedDate, onSelectDate, onToggleComple
       </div>
 
       {/* Selected date todos */}
-      {selectedDateObj && (
-        <div className="border-t border-win-border flex-1 overflow-y-auto animate-slide-in-up">
+      <div className="border-t border-win-border flex-1 overflow-y-auto animate-slide-in-up">
           <div className="flex items-center justify-between px-5 py-2.5">
             <span className="text-sm font-medium">
               {format(selectedDateObj, 'M月d日 EEEE', { locale: zhCN })}
             </span>
-            <button className="win-btn-ghost p-1 rounded-win-sm" onClick={() => onSelectDate(null)}>
-              <X size={14} />
-            </button>
           </div>
 
           {selectedDateTodos.length === 0 ? (
@@ -119,20 +127,30 @@ export function CalendarView({ todos, selectedDate, onSelectDate, onToggleComple
             </div>
           ) : (
             <div className="px-4 space-y-1 pb-4">
-              {selectedDateTodos.map((todo) => (
+              {selectedDateTodos.map((todo) => {
+                const isCompletedForDate = todo.isPeriodic && selectedDateStr
+                  ? todo.completedDates.includes(selectedDateStr)
+                  : todo.completed
+                return (
                 <div
                   key={todo.id}
                   className={`flex items-center gap-2.5 px-3 py-2 rounded-win-sm border border-win-border bg-win-card ${
-                    todo.completed ? 'opacity-50' : ''
+                    isCompletedForDate ? 'opacity-50' : ''
                   }`}
                 >
                   <button
-                    className={`win-checkbox ${todo.completed ? 'checked' : ''}`}
-                    onClick={() => onToggleComplete(todo.id)}
+                    className={`win-checkbox ${isCompletedForDate ? 'checked' : ''}`}
+                    onClick={() => {
+                      if (todo.isPeriodic && selectedDate) {
+                        onToggleComplete(todo.id, selectedDate)
+                      } else {
+                        onToggleComplete(todo.id)
+                      }
+                    }}
                   />
                   <span
                     className={`text-sm flex-1 truncate ${
-                      todo.completed ? 'line-through text-win-text-secondary' : ''
+                      isCompletedForDate ? 'line-through text-win-text-secondary' : ''
                     }`}
                   >
                     {todo.title}
@@ -147,11 +165,11 @@ export function CalendarView({ todos, selectedDate, onSelectDate, onToggleComple
                     {{ high: '高', medium: '中', low: '低' }[todo.priority]}
                   </span>
                 </div>
-              ))}
+              )
+            })}
             </div>
           )}
         </div>
-      )}
     </div>
   )
 }

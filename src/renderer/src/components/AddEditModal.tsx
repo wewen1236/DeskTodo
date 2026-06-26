@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Save, Bell, BellOff } from 'lucide-react'
+import { X, Save, Bell, BellOff, CalendarRange } from 'lucide-react'
 import { Todo, TodoList, Reminder } from '@/types'
 import { useSettingsStore } from '@/store/settingsStore'
 
@@ -15,6 +15,10 @@ interface AddEditModalProps {
     tags: string[]
     listId: string
     reminder: Reminder | null
+    isPeriodic: boolean
+    periodStart: string | null
+    periodEnd: string | null
+    completedDates: string[]
   }) => void
   onClose: () => void
 }
@@ -40,6 +44,10 @@ export function AddEditModal({ todo, lists, activeListId, onSave, onClose }: Add
   const [reminderType, setReminderType] = useState<Reminder['type']>(todo?.reminder?.type || 'once')
   const [reminderTime, setReminderTime] = useState(todo?.reminder?.time || settings.defaultReminderTime || '09:00')
 
+  const [isPeriodic, setIsPeriodic] = useState(todo?.isPeriodic || false)
+  const [periodStart, setPeriodStart] = useState(todo?.periodStart || '')
+  const [periodEnd, setPeriodEnd] = useState(todo?.periodEnd || '')
+
   useEffect(() => {
     function handler(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose()
@@ -49,7 +57,7 @@ export function AddEditModal({ todo, lists, activeListId, onSave, onClose }: Add
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [title, note, priority, dueDate, dueTime, tagsInput, listId, reminderEnabled, reminderType, reminderTime])
+  }, [title, note, priority, dueDate, dueTime, tagsInput, listId, reminderEnabled, reminderType, reminderTime, isPeriodic, periodStart, periodEnd])
 
   function handleSave() {
     if (!title.trim()) return
@@ -79,6 +87,10 @@ export function AddEditModal({ todo, lists, activeListId, onSave, onClose }: Add
       tags,
       listId,
       reminder,
+      isPeriodic,
+      periodStart: isPeriodic && periodStart ? periodStart : null,
+      periodEnd: isPeriodic && periodEnd ? periodEnd : null,
+      completedDates: todo?.completedDates || [],
     })
   }
 
@@ -165,6 +177,48 @@ export function AddEditModal({ todo, lists, activeListId, onSave, onClose }: Add
                 className="win-input w-full text-sm"
               />
             </div>
+          </div>
+
+          {/* Period */}
+          <div className="border-t border-win-border pt-3">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs text-win-text-secondary font-medium flex items-center gap-1.5">
+                <CalendarRange size={13} />
+                时间段重复
+              </label>
+              <button
+                className={`text-xs px-3 py-1 rounded-full transition-colors ${
+                  isPeriodic
+                    ? 'bg-win-accent text-win-accent-text'
+                    : 'bg-win-input-bg text-win-text-secondary'
+                }`}
+                onClick={() => setIsPeriodic(!isPeriodic)}
+              >
+                {isPeriodic ? '已开启' : '已关闭'}
+              </button>
+            </div>
+            {isPeriodic && (
+              <div className="flex gap-3 animate-slide-down">
+                <div className="flex-1">
+                  <label className="text-xs text-win-text-secondary mb-1.5 block">开始日期</label>
+                  <input
+                    type="date"
+                    value={periodStart}
+                    onChange={(e) => setPeriodStart(e.target.value)}
+                    className="win-input w-full text-sm"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs text-win-text-secondary mb-1.5 block">结束日期</label>
+                  <input
+                    type="date"
+                    value={periodEnd}
+                    onChange={(e) => setPeriodEnd(e.target.value)}
+                    className="win-input w-full text-sm"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Tags */}

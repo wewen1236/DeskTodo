@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { Todo, Reminder } from '@/types'
+import { getTodayStr, isDateInPeriod } from '@/utils/helpers'
 
 interface TodoState {
   todos: Todo[]
@@ -9,14 +10,17 @@ interface TodoState {
   filterTag: string | null
   sortBy: 'order' | 'dueDate' | 'createdAt' | 'priority'
   sortDirection: 'asc' | 'desc'
+  selectedDate: string
 
+  setSelectedDate: (date: string) => void
+  goToToday: () => void
   loadTodos: (todos: Todo[]) => void
   addTodo: (todo: Omit<Todo, 'id' | 'createdAt' | 'deletedAt'>) => void
   updateTodo: (id: string, updates: Partial<Todo>) => void
   deleteTodo: (id: string) => void
   permanentlyDeleteTodo: (id: string) => void
   restoreTodo: (id: string) => void
-  toggleComplete: (id: string) => void
+  toggleComplete: (id: string, date?: string) => void
   reorderTodos: (activeId: string, overId: string) => void
 
   setSearchQuery: (query: string) => void
@@ -38,7 +42,10 @@ export const useTodoStore = create<TodoState>((set, get) => ({
   filterTag: null,
   sortBy: 'order',
   sortDirection: 'asc',
+  selectedDate: getTodayStr(),
 
+  setSelectedDate: (date) => set({ selectedDate: date }),
+  goToToday: () => set({ selectedDate: getTodayStr() }),
   loadTodos: (todos) => set({ todos }),
 
   addTodo: (todo) => {
@@ -47,6 +54,10 @@ export const useTodoStore = create<TodoState>((set, get) => ({
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
       deletedAt: null,
+      isPeriodic: todo.isPeriodic ?? false,
+      periodStart: todo.periodStart ?? null,
+      periodEnd: todo.periodEnd ?? null,
+      completedDates: todo.completedDates ?? [],
     }
     set((state) => ({ todos: [...state.todos, newTodo] }))
   },
@@ -79,11 +90,24 @@ export const useTodoStore = create<TodoState>((set, get) => ({
     }))
   },
 
-  toggleComplete: (id) => {
+  toggleComplete: (id: string, date?: string) => {
     set((state) => ({
-      todos: state.todos.map((t) =>
-        t.id === id ? { ...t, completed: !t.completed } : t
-      ),
+      todos: state.todos.map((t) => {
+        if (t.id !== id) return t
+
+        if (t.isPeriodic && date) {
+          const day = date.slice(0, 10)
+          const alreadyCompleted = t.completedDates.includes(day)
+          return {
+            ...t,
+            completedDates: alreadyCompleted
+              ? t.completedDates.filter((d) => d !== day)
+              : [...t.completedDates, day],
+          }
+        }
+
+        return { ...t, completed: !t.completed }
+      }),
     }))
   },
 
@@ -114,8 +138,8 @@ export const useTodoStore = create<TodoState>((set, get) => ({
     })),
 
   getFilteredTodos: (listId) => {
-    const { todos, searchQuery, filterCompleted, filterPriority, filterTag, sortBy, sortDirection } = get()
-    let filtered = todos.filter((t) => t.listId === listId && !t.deletedAt)
+    const { todos, searchQuery, filterCompleted, filterPriority, filterTag, sortBy, sortDirection, selectedDate } = get()
+    let filtered = todos.filter((t) => t.listId === listId && !t.deletedAt && !t.isPeriodic)
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
@@ -127,14 +151,29 @@ export const useTodoStore = create<TodoState>((set, get) => ({
       )
     }
 
-    if (filterCompleted === 'active') filtered = filtered.filter((t) => !t.completed)
-    if (filterCompleted === 'completed') filtered = filtered.filter((t) => t.completed)
+    if (filterCompleted === 'active' || filterCompleted === 'completed') {
+      const today = getTodayStr()
+      filtered = filtered.filter((t) => {
+        if (t.isPeriodic && t.periodStart && t.periodEnd && isDateInPeriod(today, t.periodStart, t.periodEnd)) {
+          const isCompletedToday = t.completedDates.includes(today)
+          return filterCompleted === 'active' ? !isCompletedToday : isCompletedToday
+        }
+        return filterCompleted === 'active' ? !t.completed : t.completed
+      })
+    }
 
     if (filterPriority !== 'all') filtered = filtered.filter((t) => t.priority === filterPriority)
 
     if (filterTag) {
       filtered = filtered.filter((t) => t.tags.includes(filterTag!))
     }
+
+    // Date filter: only show todos matching the selected date
+    // Todos without dueDate pass through; todos with dueDate must match selectedDate
+    filtered = filtered.filter((t) => {
+      if (!t.dueDate) return true
+      return t.dueDate.slice(0, 10) === selectedDate
+    })
 
     filtered.sort((a, b) => {
       let cmp = 0

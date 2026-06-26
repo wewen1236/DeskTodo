@@ -63,16 +63,7 @@ html, body, #root {
   width: 100%;
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 8px;
   overflow: hidden;
-  background: var(--win-mica-overlay);
-  backdrop-filter: blur(2px);
-  box-shadow: var(--win-shadow);
-}
-
-.dark .win-window {
-  border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Title bar */
@@ -106,7 +97,7 @@ html, body, #root {
   height: 28px;
   border: none;
   background: transparent;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -136,7 +127,7 @@ html, body, #root {
 
 ::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
+  border-radius: 6px;
 }
 
 .dark ::-webkit-scrollbar-thumb {
@@ -194,7 +185,7 @@ html, body, #root {
   background: var(--win-input-bg);
   border: 1px solid transparent;
   border-bottom-color: var(--win-border);
-  border-radius: 4px 4px 0 0;
+  border-radius: 8px 8px 0 0;
   padding-top: 6px;
   padding-bottom: 6px;
   padding-left: 10px;
@@ -219,7 +210,7 @@ html, body, #root {
 /* Button styles */
 .win-btn {
   padding: 6px 16px;
-  border-radius: 4px;
+  border-radius: 10px;
   border: 1px solid var(--win-border);
   background: var(--win-card);
   color: var(--win-text);
@@ -280,7 +271,7 @@ html, body, #root {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 0.8125rem;
   transition: background 0.1s;
@@ -324,7 +315,7 @@ html, body, #root {
   display: inline-flex;
   align-items: center;
   padding: 1px 8px;
-  border-radius: 10px;
+  border-radius: 14px;
   font-size: 0.75rem;
   background: var(--win-input-bg);
   color: var(--win-text-secondary);

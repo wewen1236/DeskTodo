@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   Inbox, Briefcase, User, Calendar, Trash2, Settings, Plus,
   ChevronLeft, ChevronRight, MoreHorizontal, Check
@@ -6,6 +6,8 @@ import {
 import { useListStore } from '@/store/listStore'
 import { useTodoStore } from '@/store/todoStore'
 import { TodoList } from '@/types'
+import { isTodoCompletedToday, getTodayStr, getDateStats } from '@/utils/helpers'
+import { ProgressRing } from './ProgressRing'
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   inbox: <Inbox size={16} />,
@@ -30,8 +32,10 @@ export function Sidebar({ lists, activeListId, route, onRouteChange, onOpenSetti
   const [showAddList, setShowAddList] = useState(false)
   const [newListName, setNewListName] = useState('')
 
+   const todayStats = useMemo(() => getDateStats(todos, getTodayStr()), [todos])
+
   const getIncompleteCount = (listId: string) => {
-    return todos.filter((t) => t.listId === listId && !t.completed && !t.deletedAt).length
+    return todos.filter((t) => t.listId === listId && !t.isPeriodic && !isTodoCompletedToday(t) && !t.deletedAt).length
   }
 
   const handleRename = (id: string) => {
@@ -59,6 +63,7 @@ export function Sidebar({ lists, activeListId, route, onRouteChange, onOpenSetti
         >
           <ChevronRight size={16} />
         </button>
+        <ProgressRing total={todayStats.total} completed={todayStats.completed} size={32} strokeWidth={3} />
         {lists.map((list) => (
           <button
             key={list.id}
@@ -230,6 +235,10 @@ export function Sidebar({ lists, activeListId, route, onRouteChange, onOpenSetti
           <Settings size={16} />
           <span>设置</span>
         </button>
+      </div>
+
+      <div className="flex items-center justify-center py-2.5 border-t border-win-border">
+        <ProgressRing total={todayStats.total} completed={todayStats.completed} size={44} strokeWidth={3.5} />
       </div>
     </div>
   )

@@ -4,10 +4,11 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Todo } from '@/types'
 import { format } from 'date-fns'
+import { isTodoCompletedToday, getTodayStr } from '@/utils/helpers'
 
 interface TodoItemProps {
   todo: Todo
-  onToggleComplete: (id: string) => void
+  onToggleComplete: (id: string, date?: string) => void
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
 }
@@ -38,14 +39,15 @@ export function TodoItem({ todo, onToggleComplete, onEdit, onDelete }: TodoItemP
     low: 'text-[#0078d4] bg-[#0078d4]/10',
   }[todo.priority]
 
-  const isOverdue = todo.dueDate && !todo.completed && new Date(todo.dueDate) < new Date()
+  const isCompletedToday = isTodoCompletedToday(todo)
+  const isOverdue = todo.dueDate && !isCompletedToday && new Date(todo.dueDate) < new Date()
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={`todo-item group bg-win-card rounded-win border-win-border border ${priorityClass} transition-all animate-slide-in-up ${
-        todo.completed ? 'opacity-60' : ''
+        isCompletedToday ? 'opacity-60' : ''
       } ${isDragging ? 'shadow-win-lg z-50' : 'hover:shadow-win'}`}
     >
       <div className="flex items-center gap-2 px-3 py-2.5">
@@ -60,15 +62,21 @@ export function TodoItem({ todo, onToggleComplete, onEdit, onDelete }: TodoItemP
 
         {/* Checkbox */}
         <button
-          className={`win-checkbox ${todo.completed ? 'checked' : ''}`}
-          onClick={() => onToggleComplete(todo.id)}
+          className={`win-checkbox ${isCompletedToday ? 'checked' : ''}`}
+          onClick={() => {
+            if (todo.isPeriodic) {
+              onToggleComplete(todo.id, new Date().toISOString())
+            } else {
+              onToggleComplete(todo.id)
+            }
+          }}
         />
 
         {/* Title & metadata */}
         <div className="flex-1 min-w-0" onClick={() => setExpanded(!expanded)}>
           <div className="flex items-center gap-2">
             <span
-              className={`text-sm truncate ${todo.completed ? 'line-through text-win-text-secondary' : 'text-win-text'}`}
+              className={`text-sm truncate ${isCompletedToday ? 'line-through text-win-text-secondary' : 'text-win-text'}`}
             >
               {todo.title}
             </span>
@@ -76,6 +84,12 @@ export function TodoItem({ todo, onToggleComplete, onEdit, onDelete }: TodoItemP
             <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium flex-shrink-0 ${priorityColor}`}>
               {priorityLabel}
             </span>
+            {/* Period badge */}
+            {todo.isPeriodic && todo.periodStart && todo.periodEnd && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded font-medium text-[#0078d4] bg-[#0078d4]/10 flex-shrink-0">
+                {format(new Date(todo.periodStart), 'M/d')} - {format(new Date(todo.periodEnd), 'M/d')}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             {todo.dueDate && (
@@ -138,6 +152,15 @@ export function TodoItem({ todo, onToggleComplete, onEdit, onDelete }: TodoItemP
               <div>
                 <span className="text-[11px] text-win-text-secondary font-medium">备注</span>
                 <p className="text-sm text-win-text mt-0.5 whitespace-pre-wrap">{todo.note}</p>
+              </div>
+            )}
+            {todo.isPeriodic && todo.periodStart && todo.periodEnd && (
+              <div>
+                <span className="text-[11px] text-win-text-secondary font-medium">重复周期</span>
+                <p className="text-sm text-win-text mt-0.5">
+                  {format(new Date(todo.periodStart), 'yyyy年M月d日')} → {format(new Date(todo.periodEnd), 'yyyy年M月d日')}
+                  {isCompletedToday && ' · 今天已完成'}
+                </p>
               </div>
             )}
             <div className="flex items-center gap-4 text-[11px] text-win-text-secondary">

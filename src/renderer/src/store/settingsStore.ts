@@ -11,8 +11,11 @@ interface SettingsState {
   applyTheme: () => void
 }
 
+const initialTheme: 'light' | 'dark' =
+  typeof window !== 'undefined' && (window as any).__INITIAL_THEME__ === 'dark' ? 'dark' : 'light'
+
 const DEFAULT_SETTINGS: Settings = {
-  theme: 'light',
+  theme: initialTheme,
   accentColor: '#0067c0',
   backgroundBlur: 8,
   fontSize: 'medium',

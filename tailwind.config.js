@@ -34,9 +34,9 @@ export default {
         }
       },
       borderRadius: {
-        'win': '8px',
-        'win-sm': '4px',
-        'win-lg': '12px',
+        'win': '12px',
+        'win-sm': '8px',
+        'win-lg': '20px',
       },
       boxShadow: {
         'win': '0 2px 8px rgba(0,0,0,0.12), 0 0 1px rgba(0,0,0,0.08)',

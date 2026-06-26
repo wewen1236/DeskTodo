@@ -11,6 +11,7 @@ interface ElectronAPI {
     closeMini: () => void
     restoreFromMini: () => void
     onMaximizeChange: (callback: (isMaximized: boolean) => void) => () => void
+    setBackgroundColor: (color: string) => void
   }
   store: {
     get: (key: string) => Promise<any>
@@ -30,6 +31,7 @@ interface ElectronAPI {
 declare global {
   interface Window {
     electronAPI: ElectronAPI
+    __INITIAL_THEME__: 'light' | 'dark'
   }
 }
 

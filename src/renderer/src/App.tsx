@@ -5,6 +5,7 @@ import { useSettingsStore } from './store/settingsStore'
 import { TitleBar } from './components/TitleBar'
 import { Sidebar } from './components/Sidebar'
 import { SearchBar } from './components/SearchBar'
+import { DateHeader } from './components/DateHeader'
 import { TodoList } from './components/TodoList'
 import { CalendarView } from './components/CalendarView'
 import { MiniWindow } from './components/MiniWindow'
@@ -17,7 +18,7 @@ type AppRoute = 'todos' | 'calendar' | 'trash'
 const isMini = new URLSearchParams(window.location.search).get('mini') === 'true'
 
 export default function App() {
-  const { loadTodos, todos, addTodo, updateTodo, deleteTodo, restoreTodo, permanentlyDeleteTodo, toggleComplete } =
+  const { loadTodos, todos, addTodo, updateTodo, deleteTodo, restoreTodo, permanentlyDeleteTodo, toggleComplete, selectedDate, setSelectedDate } =
     useTodoStore()
   const { loadLists, lists, activeListId } = useListStore()
   const { loadSettings, settings, settingsOpen, setSettingsOpen } = useSettingsStore()
@@ -25,7 +26,6 @@ export default function App() {
   const [route, setRoute] = useState<AppRoute>('todos')
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const skipSync = useRef(false)
 
   useEffect(() => {
@@ -74,6 +74,8 @@ export default function App() {
       if (key === 'todos') {
         skipSync.current = true
         loadTodos(value)
+      } else if (key === 'settings') {
+        loadSettings(value)
       }
     })
     return () => {
@@ -98,7 +100,7 @@ export default function App() {
   if (isMini) {
     return (
       <MiniWindow
-        todos={todos.filter((t) => !t.deletedAt && !t.completed).slice(0, 5)}
+        todos={todos.filter((t) => !t.deletedAt && !t.isPeriodic).slice(0, 20)}
         onToggleComplete={toggleComplete}
         onDelete={deleteTodo}
         onAddTodo={(title) => {
@@ -113,6 +115,10 @@ export default function App() {
             listId: activeListId || 'default',
             reminder: null,
             order: todos.length,
+            isPeriodic: false,
+            periodStart: null,
+            periodEnd: null,
+            completedDates: [],
           })
         }}
       />
@@ -135,6 +141,7 @@ export default function App() {
         />
         <div className="flex flex-col flex-1 overflow-hidden">
           <SearchBar />
+          {route === 'todos' && <DateHeader />}
           <div className="flex-1 overflow-hidden">
             {route === 'todos' && (
               <TodoList
@@ -149,7 +156,10 @@ export default function App() {
               <CalendarView
                 todos={todos.filter((t) => !t.deletedAt)}
                 selectedDate={selectedDate}
-                onSelectDate={setSelectedDate}
+                onSelectDate={(date) => {
+                  setSelectedDate(date)
+                  setRoute('todos')
+                }}
                 onToggleComplete={toggleComplete}
               />
             )}

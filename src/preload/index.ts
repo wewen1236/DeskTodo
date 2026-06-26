@@ -15,6 +15,7 @@ const electronAPI = {
       ipcRenderer.on('window:maximizeChange', handler)
       return () => ipcRenderer.removeListener('window:maximizeChange', handler)
     },
+    setBackgroundColor: (color: string) => ipcRenderer.send('window:setBackgroundColor', color),
   },
   store: {
     get: (key: string) => ipcRenderer.invoke('store:get', key),

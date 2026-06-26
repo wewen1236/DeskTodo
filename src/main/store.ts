@@ -2,6 +2,18 @@ import { app } from 'electron'
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 import { join } from 'path'
 
+const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
+
+interface TodoItem {
+  id: string
+  completed: boolean
+  deletedAt: string | null
+  createdAt: string
+  isPeriodic?: boolean
+  completedDates?: string[]
+  [key: string]: any
+}
+
 class Store {
   private data: Record<string, any> = {}
   private filePath: string
@@ -10,6 +22,7 @@ class Store {
     const userDataPath = app.getPath('userData')
     this.filePath = join(userDataPath, 'desktodo-data.json')
     this.load()
+    this.cleanup()
   }
 
   private load() {
@@ -31,12 +44,38 @@ class Store {
     }
   }
 
+  private cleanup() {
+    const todos: TodoItem[] | undefined = this.data['todos']
+    if (!todos || !Array.isArray(todos)) return
+
+    const cutoff = Date.now() - ONE_YEAR_MS
+
+    const cleaned = todos.filter((t) => {
+      if (t.deletedAt && new Date(t.deletedAt).getTime() < cutoff) return false
+      if (t.completed && !t.isPeriodic && new Date(t.createdAt).getTime() < cutoff) return false
+      return true
+    }).map((t) => {
+      if (t.isPeriodic && t.completedDates && t.completedDates.length > 0) {
+        const cutoffStr = new Date(cutoff).toISOString().slice(0, 10)
+        return { ...t, completedDates: t.completedDates.filter((d: string) => d >= cutoffStr) }
+      }
+      return t
+    })
+
+    if (cleaned.length !== todos.length) {
+      this.data['todos'] = cleaned
+    }
+  }
+
   get(key: string): any {
     return this.data[key]
   }
 
   set(key: string, value: any): void {
     this.data[key] = value
+    if (key === 'todos') {
+      this.cleanup()
+    }
     this.save()
   }
 

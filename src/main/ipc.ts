@@ -53,10 +53,25 @@ export function registerIpcHandlers(
     return store.get(key)
   })
 
+  let lastBgColor = ''
+
   ipcMain.handle('store:set', (event, key: string, value: any) => {
     store.set(key, value)
+
+    // Sync window background color synchronously when theme changes
+    // This runs BEFORE data:updated broadcast to prevent DWM/CSS mismatch flash
+    if (key === 'settings' && value?.theme) {
+      const bgColor = value.theme === 'dark' ? '#202020' : '#f3f3f3'
+      if (bgColor !== lastBgColor) {
+        lastBgColor = bgColor
+        BrowserWindow.getAllWindows().forEach((win) => {
+          win.setBackgroundColor(bgColor)
+        })
+      }
+    }
+
     // Notify all other windows of data change
-    if (key === 'todos') {
+    if (key === 'todos' || key === 'settings') {
       BrowserWindow.getAllWindows().forEach((win) => {
         if (win.webContents.id !== event.sender.id) {
           win.webContents.send('data:updated', { key, value })
@@ -110,6 +125,14 @@ export function registerIpcHandlers(
       return readFileSync(result.filePaths[0], 'utf-8')
     }
     return null
+  })
+
+  // Theme background color
+  ipcMain.on('window:setBackgroundColor', (event, color: string) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (win) {
+      win.setBackgroundColor(color)
+    }
   })
 
   // Window maximize state change
