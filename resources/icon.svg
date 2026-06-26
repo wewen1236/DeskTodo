@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0078D4"/>
+      <stop offset="100%" stop-color="#005A9E"/>
+    </linearGradient>
+    <linearGradient id="check" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E8F4FD"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#002E4D" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <!-- Rounded background square -->
+  <rect x="28" y="28" width="200" height="200" rx="44" ry="44" fill="url(#bg)" filter="url(#shadow)"/>
+  <!-- Checkmark -->
+  <g transform="translate(128,140) scale(1,1)">
+    <path d="M-52,-10 L-20,28 L52,-48" fill="none" stroke="url(#check)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

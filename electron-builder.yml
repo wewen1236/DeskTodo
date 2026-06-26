@@ -1,0 +1,25 @@
+appId: com.desktodo.app
+productName: DeskTodo
+copyright: Copyright © 2024 DeskTodo
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - out/**/*
+  - "!node_modules/**/*"
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: resources/icon.ico
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: DeskTodo
+  uninstallDisplayName: DeskTodo
+  installerIcon: resources/icon.ico
+  uninstallerIcon: resources/icon.ico

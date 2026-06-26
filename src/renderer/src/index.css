@@ -1,0 +1,380 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --win-bg: #f3f3f3;
+  --win-bg-secondary: #e8e8e8;
+  --win-card: #fcfcfc;
+  --win-card-hover: #f5f5f5;
+  --win-border: rgba(0, 0, 0, 0.06);
+  --win-text: #1a1a1a;
+  --win-text-secondary: #5c5c5c;
+  --win-accent: #0067c0;
+  --win-accent-hover: #005299;
+  --win-accent-text: #ffffff;
+  --win-shadow: 0 2px 8px rgba(0,0,0,0.12), 0 0 1px rgba(0,0,0,0.08);
+  --win-mica-overlay: rgba(243, 243, 243, 0.92);
+  --win-divider: rgba(0, 0, 0, 0.08);
+  --win-input-bg: rgba(0, 0, 0, 0.04);
+  --win-input-focus: rgba(0, 103, 192, 0.15);
+  --font-size-multiplier: 1;
+}
+
+.dark {
+  --win-bg: #202020;
+  --win-bg-secondary: #282828;
+  --win-card: #2d2d2d;
+  --win-card-hover: #333333;
+  --win-border: rgba(255, 255, 255, 0.08);
+  --win-text: #ffffff;
+  --win-text-secondary: #ababab;
+  --win-accent: #60cdff;
+  --win-accent-hover: #8dd8ff;
+  --win-accent-text: #1a1a1a;
+  --win-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 1px rgba(255,255,255,0.05);
+  --win-mica-overlay: rgba(32, 32, 32, 0.75);
+  --win-divider: rgba(255, 255, 255, 0.08);
+  --win-input-bg: rgba(255, 255, 255, 0.06);
+  --win-input-focus: rgba(96, 205, 255, 0.2);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: 'Segoe UI Variable', 'Microsoft YaHei UI', 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  font-size: calc(0.875rem * var(--font-size-multiplier));
+  color: var(--win-text);
+  background: var(--win-bg);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Windows 11 window border */
+.win-window {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--win-mica-overlay);
+  backdrop-filter: blur(2px);
+  box-shadow: var(--win-shadow);
+}
+
+.dark .win-window {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Title bar */
+.win-titlebar {
+  -webkit-app-region: drag;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  flex-shrink: 0;
+}
+
+.win-titlebar .title {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--win-text);
+  opacity: 0.9;
+}
+
+/* Window controls */
+.win-controls {
+  -webkit-app-region: no-drag;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.win-control-btn {
+  width: 36px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--win-text);
+  transition: background 0.1s;
+}
+
+.win-control-btn:hover {
+  background: var(--win-input-bg);
+}
+
+.win-control-btn.close:hover {
+  background: #c42b1c;
+  color: white;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* Checkbox custom */
+.win-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--win-text-secondary);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.win-checkbox:hover {
+  border-color: var(--win-accent);
+}
+
+.win-checkbox.checked {
+  background: var(--win-accent);
+  border-color: var(--win-accent);
+}
+
+.win-checkbox.checked::after {
+  content: '';
+  width: 6px;
+  height: 10px;
+  border: solid var(--win-accent-text);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translateY(-1px);
+}
+
+/* Priority indicators */
+.priority-high { border-left: 3px solid #c42b1c; }
+.priority-medium { border-left: 3px solid #f7630c; }
+.priority-low { border-left: 3px solid #0078d4; }
+
+/* Input styling */
+.win-input {
+  background: var(--win-input-bg);
+  border: 1px solid transparent;
+  border-bottom-color: var(--win-border);
+  border-radius: 4px 4px 0 0;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-left: 10px;
+  padding-right: 10px;
+  color: var(--win-text);
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+  transition: all 0.15s;
+}
+
+.win-input:focus {
+  background: var(--win-input-focus);
+  border-bottom-color: var(--win-accent);
+}
+
+.win-input::placeholder {
+  color: var(--win-text-secondary);
+  opacity: 0.6;
+}
+
+/* Button styles */
+.win-btn {
+  padding: 6px 16px;
+  border-radius: 4px;
+  border: 1px solid var(--win-border);
+  background: var(--win-card);
+  color: var(--win-text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  transition: all 0.1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.win-btn:hover {
+  background: var(--win-card-hover);
+}
+
+.win-btn:active {
+  transform: scale(0.98);
+}
+
+.win-btn-primary {
+  background: var(--win-accent);
+  color: var(--win-accent-text);
+  border-color: transparent;
+}
+
+.win-btn-primary:hover {
+  background: var(--win-accent-hover);
+}
+
+.win-btn-ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+.win-btn-ghost:hover {
+  background: var(--win-input-bg);
+}
+
+.win-btn-danger {
+  color: #c42b1c;
+}
+
+.win-btn-danger:hover {
+  background: rgba(196, 43, 28, 0.08);
+}
+
+/* Calendar grid */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  transition: background 0.1s;
+  position: relative;
+}
+
+.calendar-day:hover {
+  background: var(--win-input-bg);
+}
+
+.calendar-day.today {
+  background: var(--win-accent);
+  color: var(--win-accent-text);
+  border-radius: 50%;
+}
+
+.calendar-day.selected {
+  background: var(--win-input-focus);
+  font-weight: 600;
+}
+
+.calendar-day.other-month {
+  opacity: 0.35;
+}
+
+.calendar-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--win-accent);
+  position: absolute;
+  bottom: 3px;
+}
+
+.calendar-day.today .calendar-dot {
+  background: var(--win-accent-text);
+}
+
+/* Tag styles */
+.win-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  background: var(--win-input-bg);
+  color: var(--win-text-secondary);
+}
+
+/* Animations */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); max-height: 0; }
+  to { opacity: 1; transform: translateY(0); max-height: 200px; }
+}
+
+@keyframes slideUp {
+  from { opacity: 1; transform: translateY(0); max-height: 200px; }
+  to { opacity: 0; transform: translateY(-8px); max-height: 0; }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.2s ease-out forwards;
+}
+
+/* Drag handle */
+.drag-handle {
+  cursor: grab;
+  color: var(--win-text-secondary);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.dragging .drag-handle,
+.todo-item:hover .drag-handle {
+  opacity: 0.6;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Overlay for modals */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
